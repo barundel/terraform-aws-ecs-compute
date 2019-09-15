@@ -18,6 +18,10 @@ module "asg" {
     },
   ]
 
+  iam_instance_profile = module.iam_role.iam_instance_profile
+
+  user_data = var.user_data
+
   # Auto scaling group
   asg_name = "${var.asg_name}-asg"
   vpc_zone_identifier = var.subnets
@@ -40,4 +44,19 @@ module "asg" {
     },
   ]
 
+}
+
+module "iam_role" {
+  source = "github.com/barundel/terraform-iam/aws"
+
+  role_name                 = "ECSRole"
+
+  create_role = true
+  iam_instance_profile = true
+
+  assume_role_policy        = data.aws_iam_policy_document.trust_profile.json
+
+  inline_policies_to_create = {
+    "ECSAccess" = data.aws_iam_policy_document.permissions.json
+  }
 }
